@@ -1,0 +1,7 @@
+/apps/*
+/apps-config/wallet-backend-server/config/index.js
+/reverse-proxy/certbot/letsencrypt/
+/reverse-proxy/certbot/log/
+/reverse-proxy/certbot/www/
+/reverse-proxy/nginx/log/
+.env

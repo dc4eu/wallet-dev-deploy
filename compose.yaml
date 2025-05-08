@@ -1,0 +1,132 @@
+
+name: sunet-wallet-test
+
+services:
+
+  # =========================================================================
+  # Production reverse proxy + cert handling
+  # =========================================================================
+
+  nginx:
+    container_name: wallet-nginx
+    image: nginx:alpine
+    depends_on:
+      frontend:
+        condition: service_started
+      backend-server:
+        condition: service_healthy
+      certbot:
+        condition: service_started
+    env_file:
+      - ./reverse-proxy/.env
+    volumes:
+      - ./reverse-proxy/nginx/templates:/templates:ro
+      - ./reverse-proxy/nginx/log/:/var/log/
+      - ./reverse-proxy/nginx/40-generate-conf.sh:/docker-entrypoint.d/40-generate-conf.sh:ro
+      - ./reverse-proxy/nginx/99-crontab.sh:/docker-entrypoint.d/99-crontab.sh:ro
+      - ./reverse-proxy/certbot/letsencrypt:/etc/letsencrypt:ro
+      - ./reverse-proxy/certbot/www:/var/www/certbot
+      - frontend-dist:/frontend:ro
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - wallet_net
+      - public_net
+    profiles:
+      - prod
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: wallet-certbot
+    env_file:
+      - ./reverse-proxy/.env
+    volumes:
+      - ./reverse-proxy/certbot/letsencrypt:/etc/letsencrypt
+      - ./reverse-proxy/certbot/www:/var/www/certbot
+      - ./reverse-proxy/certbot/log/:/var/log/
+      - ./reverse-proxy/certbot/entrypoint.sh:/entrypoint.sh
+    entrypoint: "sh /entrypoint.sh"
+    profiles:
+      - prod
+
+
+  # =========================================================================
+  # Wallet 
+  # =========================================================================
+
+  frontend:
+    container_name: wallet-frontend
+    build:
+      context: apps/wallet-frontend
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - 127.0.0.1:3000:80
+    networks:
+      - wallet_net
+      - public_net
+
+  backend-server:
+    container_name: wallet-backend-server
+    build:
+      context: apps/wallet-backend-server
+      dockerfile: Dockerfile
+    restart: on-failure
+    depends_on:
+      backend-db:
+        condition: service_healthy
+    volumes:
+      - ./apps-config/wallet-backend-server/config/index.js:/app/dist/config/index.js
+      - ./apps-config/wallet-backend-server/keys:/app/keys
+    ports:
+      - 127.0.0.1:8002:8002
+    networks:
+      - public_net
+      - wallet_net
+
+  backend-db:
+    image: mariadb:latest
+    container_name: wallet-backend-db
+    restart: on-failure
+    environment:
+      MARIADB_HOST: wallet-backend-db
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: wallet
+      MARIADB_USER: wallet
+      MARIADB_PASSWORD: wallet
+    healthcheck:
+      test: ["CMD", "mariadb" ,"-uroot", "-proot", "--protocol=TCP", "-hlocalhost", "--port=3306",  "-estatus"]
+      start_period: 30s
+      interval: 5s
+      timeout: 2s
+    volumes:
+      - backend-db:/var/lib/mysql
+    networks:
+      - wallet_net
+
+  # =========================================================================
+  # Debug
+  # =========================================================================
+  phpmyadmin:
+    container_name: debug-phpmyadmin
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      PMA_ARBITRARY: 1
+    networks:
+      - wallet_net
+      - public_net
+    profiles: 
+      - debug
+
+volumes:
+  backend-db:
+
+networks:
+  public_net:
+    internal: false
+  wallet_net:
+    driver: bridge
