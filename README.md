@@ -42,6 +42,10 @@ Docker based setup of wwWallet to run on SUNET's infrastructure.
 
 Contains clones of repos that are used to build services that are not available as pre-built docker images, or where this would be impractical, like `wallet-frontend` and `wallet-backend-server`.
 
+### apps-config/
+
+Config for wallet apps, right now `wallet-backend-server` only.
+
 ### reverse-proxy/
 
 Configuration files for the services making up the reverse proxy.
@@ -49,9 +53,9 @@ Configuration files for the services making up the reverse proxy.
 ## Services
 
 ### `certbot`
-Dir: `reverse-proxy/certbot`
-Version: `latest`
-Profile: `prod`
+* Dir: `reverse-proxy/certbot`
+* Version: `latest`
+* Profile: `prod`
 
 Configuration for the certbot service.
 The entrypoint.sh file checks for, and if missing, requests SSL certs from Let's Encrypt, as well as a a cron job that renews the certs every month.
@@ -59,19 +63,20 @@ The entrypoint.sh file checks for, and if missing, requests SSL certs from Let's
 It takes 1 environment variable: `WALLET_DOMAIN`. (Possibility to add future services later)
 
 ### `nginx`
-Dir: `reverse-proxy/nginx`
-Version: `latest`
-Profile: `prod`
+* Dir: `reverse-proxy/nginx`
+* Version: `latest`
+* Profile: `prod`
 
 The NGINX web server. Automatically generates the server configuration based on the provided environment variables: `WALLET_DOMAIN`. (Possibility to add future services later)
 
 ### `wallet-backend-server`
-Dir: `config/wallet-backend-server`
+* Dir: `apps/wallet-backend-server`
+* Config: `apps-config/wallet-backend-server`
 
 The wallet backend server.
 
 ### `wallet-frontend`
-Dir: `config/wallet-frontend`
+* Dir: `apps/wallet-frontend`
 
 The wallet frontend application.
 
@@ -81,3 +86,6 @@ Profile: `debug`
 
 For local debugging of wallet database. Doesn't run by default.
 
+## To Do
+
+- [ ] Certs for `wallet-backend-server`.
