@@ -15,7 +15,7 @@ for domain in WALLET_DOMAIN DEMO_ISSUER_DOMAIN; do
         output_path="$output_dir/$name.conf"
 
         if [ -f "$template_path" ]; then
-            envsubst "\$$value" < "$template_path" > "$output_path"
+            envsubst "\$$domain" < "$template_path" > "$output_path"
         else
             echo "Template $template_path not found!"
         fi
