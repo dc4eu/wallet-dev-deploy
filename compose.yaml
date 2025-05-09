@@ -106,11 +106,16 @@ services:
     networks:
       - wallet_net
 
+
+  # =========================================================================
+  # Issuer
+  # =========================================================================
+
   issuer:
     container_name: demo-issuer
     build:
       context: apps/wallet-ecosystem
-      dockerfile: docker/wallet-enterprise-issuer.Dockerfile
+      dockerfile: wallet-enterprise-configurations/issuer/Dockerfile
     depends_on:
       issuer-db:
         condition: service_healthy
