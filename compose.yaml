@@ -77,7 +77,9 @@ services:
         condition: service_healthy
     volumes:
       - ./apps-config/wallet-backend-server/config/index.js:/app/dist/config/index.js
-      - ./apps-config/wallet-backend-server/keys:/app/keys
+      - ./apps/wallet-ecosystem/wallet-enterprise-configurations/issuer/keys/pem.key:/app/keys/wallet-provider.key
+      - ./apps/wallet-ecosystem/wallet-enterprise-configurations/issuer/keys/pem.crt:/app/keys/wallet-provider.pem
+      - ./apps/wallet-ecosystem/wallet-enterprise-configurations/issuer/keys/ca.crt:/app/keys/ca.pem
     ports:
       - 127.0.0.1:8002:8002
     networks:
@@ -104,6 +106,49 @@ services:
     networks:
       - wallet_net
 
+  issuer:
+    container_name: demo-issuer
+    build:
+      context: apps/wallet-ecosystem
+      dockerfile: docker/wallet-enterprise-issuer.Dockerfile
+    depends_on:
+      issuer-db:
+        condition: service_healthy
+    restart: on-failure
+    volumes:
+      - ./apps/wallet-ecosystem/wallet-enterprise-configurations/issuer/dataset:/app/dataset:rw
+      - ./apps/wallet-ecosystem/wallet-enterprise-configurations/issuer/keys:/app/keys:rw
+      - ./apps-config/issuer/config/index.js:/app/dist/config/index.js
+    ports:
+      - 127.0.0.1:8003:8003
+    networks:
+      - issuer_net
+      - public_net
+    profiles:
+      - demo-issuer
+
+  issuer-db:
+    image: mariadb:latest
+    container_name: demo-issuer-db
+    restart: on-failure
+    environment:
+      MARIADB_HOST: demo-issuer-db
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: issuer
+      MARIADB_USER: issuer
+      MARIADB_PASSWORD: issuer
+    healthcheck:
+      test: ["CMD", "mariadb" ,"-uroot", "-proot", "--protocol=TCP", "-hlocalhost", "--port=3306",  "-estatus"]
+      start_period: 30s
+      interval: 5s
+      timeout: 2s
+    volumes:
+      - issuer-db:/var/lib/mysql
+    networks:
+      - issuer_net
+    profiles:
+      - demo-issuer
+
   # =========================================================================
   # Debug
   # =========================================================================
@@ -117,15 +162,19 @@ services:
       PMA_ARBITRARY: 1
     networks:
       - wallet_net
+      - issuer_net
       - public_net
     profiles: 
       - debug
 
 volumes:
   backend-db:
+  issuer-db:
 
 networks:
   public_net:
     internal: false
   wallet_net:
+    driver: bridge
+  issuer_net:
     driver: bridge
