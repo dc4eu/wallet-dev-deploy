@@ -166,7 +166,6 @@ services:
         condition: service_healthy
     restart: on-failure
     volumes:
-      - ./apps/wallet-ecosystem/wallet-enterprise-configurations/acme-verifier/dataset:/app/dataset:rw
       - ./apps/wallet-ecosystem/wallet-enterprise-configurations/acme-verifier/keys:/app/keys:rw
       - ./apps-config/verifier/config/index.js:/app/dist/config/index.js
     ports:
