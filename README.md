@@ -98,7 +98,7 @@ docker compose --profile prod up
 > [!TIP]
 > If you're running locally:
 > 1. you can include `--profile debug` to get a instance of PHPMyAdmin on http://localhost:8080.
-> 2. You shouldn't use `--profile debug`, as it will not work locally.
+> 2. You shouldn't use `--profile prod`, as it will not work locally.
 
 ## Structure
 
