@@ -2,38 +2,115 @@
 
 Docker based setup of wwWallet to run on SUNET's infrastructure.
 
+## Requirements
+
+* Git
+* Docker and Docker Compose installed
+* If deploying to prod:
+    * a publicly accessible vm with 3 domains pointed to it for the Wallet, Issuer and Verifier services
+    * ports `80` and `443` open
+
 ## Setup
 
-1. **Clone repo.**
-2. **Clone wallet apps:** `bash pull-latest.sh`.
-3. **Wallet Frontend**
-    1. `cd apps/wallet-frontend`
-    2. `cp .env.example .env.prod`
-    3. Edit env file if necessary (if deploying to prod make sure you change the urls to match your setup). For details refer to [wwWallet/wallet-frontend docs](https://github.com/wwWallet/wallet-frontend)
-4. **Wallet Backend Server**
-    1. `cd apps-config/wallet-backend-server`
-    2. `cp config/config.template.js config/index.js`
-    3. Edit `config/index.js` as necessary. For details refer to [wwWallet/wallet-backend-server docs](https://github.com/wwWallet/wallet-backend-server)
-        1. You can generate `appSecret` by running `openssl rand -base64 64`.
-5. **Certbot & NGINX (if deploying to prod)**
-    1. `cd reverse-proxy`
-    2. `cp .env.example .env`
-    3. Edit the `.env` file to include your domains. `WALLET_DOMAIN` is required.
-6. **Build:** `docker compose build`.
-7. **Start it up:** `docker compose up` or `docker compose --profile prod up`
-8. **Success! 🤞** You should now have the wallet running on the domains you specified in the NGINX config! If you're running locally (without --profile prod), you will find the frontend at http://localhost:3000 and the backend server at http://localhost:8004
-9. **Changes**: To fetch the latest commits, you can rerun `bash pull-latest.sh`
+Besides cloining the repo, this is what you need to do:
 
+### 1. Clone wallet codebase and build Docker images
+
+After cd'ing into the directory you cloned this project to, run `bash pull-latest.sh` to pull the wwWallet repos into `apps/`.
+
+> [!NOTE]
+> You might get an error when the script attempts to fetch the submodules of the `wallet-ecosystem` project, this is due to 
+> how that repo has configured it's submodules. As a **temporary fix**, edit `apps/wallet-ecosystem/.git/config` like so:
+>```diff
+>// ...
+>[submodule "wallet-backend-server"]
+>-   url = git@github.com:wwwallet/wallet-backend-server.git
+>+   url = https://github.com/wwwallet/wallet-backend-server.git
+>[submodule "wallet-enterprise"]
+>-	url = git@github.com:wwwallet/wallet-enterprise.git
+>+	url = https://github.com/wwwallet/wallet-enterprise.git
+>[submodule "wallet-frontend"]
+>-	url = git@github.com:wwwallet/wallet-frontend.git
+>+	url = https://github.com/wwwallet/wallet-frontend.git
+>```
+> After this, you need to run `bash pull-latest.sh` again to fetch the submodules.
+
+Now you're ready to build *most* of the Docker images we need:
+```bash
+docker compose build backend-server issuer verifier
+```
+
+
+### 2. Frontend config and build
+
+You need to configure the frontend before you can build it. In order to do this:
+1. `cd apps/wallet-frontend`
+2. `cp .env.example .env.prod`
+3. Edit `.env.prod` file if necessary (if deploying to prod make sure you change the urls to match your setup). For details refer to [wwWallet/wallet-frontend docs](https://github.com/wwWallet/wallet-frontend)
+4. Build the Docker image `docker compose build frontend`.
+
+
+### 3. Configure Issuer, Verifier and Backend
+
+> [!Note]
+> Make sure that `appSecret` is the same in each of the `backend-server`, `issuer` and `verifier` configs.
+> You can generate `appSecret` by running `openssl rand -base64 64`.
+
+#### 3.1 Issuer
+1. `cd apps-config/issuer`
+2. `cp config/config.template.js config/index.js`
+3. Edit `config/index.js` as necessary. For details refer to [wwWallet/wallet-ecosystem](https://github.com/wwWallet/wallet-ecosystem). 
+
+#### 3.2 Verifier
+1. `cd apps-config/verifier`
+2. `cp config/config.template.js config/index.js`
+3. Edit `config/index.js` as necessary. For details refer to [wwWallet/wallet-ecosystem](https://github.com/wwWallet/wallet-ecosystem). 
+
+#### 3.3 Backend
+1. `cd apps-config/wallet-backend-server`
+2. `cp config/config.template.js config/index.js`
+3. Edit `config/index.js` as necessary. For details refer to [wwWallet/wallet-backend-server](https://github.com/wwWallet/wallet-backend-server).
+4. Add the trusted root cert, Verifier and Issuer details to the database by running: `bash scripts/backend-db/insert-issuer-verifier-data.sh` and enter Issuer and Verifier urls where prompted.
+
+
+### 4. Certbot & NGINX (if deploying to prod)
+
+These containers are in the `prod` profile, which means that they won't start by default.
+
+1. `cd reverse-proxy`
+2. `cp .env.example .env`
+3. Edit the `.env` file to include your domains.
+
+#### 4.1 Certbot
+
+Without the nginx container running, perform the inital request of the Let's Encrypt certs by running:
+```bash
+bash scripts/certbot/initial-cert-fetch.sh
+```
+
+### 5. Start
+
+At this point, you should be good to start up the services:
+```bash
+docker compose --profile prod up
+```
+
+> [!TIP]
+> If you're running locally:
+> 1. you can include `--profile debug` to get a instance of PHPMyAdmin on http://localhost:8080.
+> 2. You shouldn't use `--profile debug`, as it will not work locally.
 
 ## Structure
 
 ```bash
 .
-├── apps                      # Source code of wallet front/backend.
-├── apps-config               # Configs for wallet front/backend.
+├── apps                      # Source code of wallet front/backend and issuer/verifier.
+├── apps-config               # Configs for wallet front/backend and issuer/verifier.
 ├── reverse-proxy
 │   ├── certbot               # Certbot configs.
 │   └── nginx                 # Nginx configs.
+├── scripts                   # Misc. scripts.
+
 │
 └── compose.yaml              # Docker Compose config.
 ```
@@ -49,43 +126,3 @@ Config for wallet apps, right now `wallet-backend-server` only.
 ### reverse-proxy/
 
 Configuration files for the services making up the reverse proxy.
-
-## Services
-
-### `certbot`
-* Dir: `reverse-proxy/certbot`
-* Version: `latest`
-* Profile: `prod`
-
-Configuration for the certbot service.
-The entrypoint.sh file checks for, and if missing, requests SSL certs from Let's Encrypt, as well as a a cron job that renews the certs every month.
-
-It takes 1 environment variable: `WALLET_DOMAIN`. (Possibility to add future services later)
-
-### `nginx`
-* Dir: `reverse-proxy/nginx`
-* Version: `latest`
-* Profile: `prod`
-
-The NGINX web server. Automatically generates the server configuration based on the provided environment variables: `WALLET_DOMAIN`. (Possibility to add future services later)
-
-### `wallet-backend-server`
-* Dir: `apps/wallet-backend-server`
-* Config: `apps-config/wallet-backend-server`
-
-The wallet backend server.
-
-### `wallet-frontend`
-* Dir: `apps/wallet-frontend`
-
-The wallet frontend application.
-
-### `debug-phpmyadmin`
-Version: `latest`
-Profile: `debug`
-
-For local debugging of wallet database. Doesn't run by default.
-
-## To Do
-
-- [ ] Certs for `wallet-backend-server`.
