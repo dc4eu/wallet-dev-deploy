@@ -1,7 +1,5 @@
 /apps/*
-/apps-config/issuer/config/index.js
-/apps-config/verifier/config/index.js
-/apps-config/wallet-backend-server/config/index.js
+/apps-config/*/config/index.js
 /reverse-proxy/certbot/letsencrypt/
 /reverse-proxy/certbot/log/
 /reverse-proxy/certbot/www/
