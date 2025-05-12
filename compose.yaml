@@ -15,8 +15,6 @@ services:
         condition: service_started
       backend-server:
         condition: service_started
-      certbot:
-        condition: service_started
     env_file:
       - ./reverse-proxy/.env
     volumes:
@@ -38,6 +36,9 @@ services:
   certbot:
     image: certbot/certbot:latest
     container_name: wallet-certbot
+    depends_on:
+      nginx:
+        condition: service_started
     env_file:
       - ./reverse-proxy/.env
     volumes:
