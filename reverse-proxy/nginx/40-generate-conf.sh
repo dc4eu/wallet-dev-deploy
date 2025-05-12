@@ -5,7 +5,7 @@ output_dir="/etc/nginx/conf.d"
 
 rm -f $output_dir/*.conf
 
-for domain in WALLET_DOMAIN DEMO_ISSUER_DOMAIN; do
+for domain in WALLET_DOMAIN DEMO_ISSUER_DOMAIN DEMO_VERIFIER_DOMAIN; do
     value=$(eval "echo \$$domain")
 
     if [ -n "$value" ]; then

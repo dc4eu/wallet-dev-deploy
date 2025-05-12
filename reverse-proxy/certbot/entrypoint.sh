@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 apk update && apk add dcron
 
-domains="$WALLET_DOMAIN $DEMO_ISSUER_DOMAIN"
+domains="$WALLET_DOMAIN $DEMO_ISSUER_DOMAIN $DEMO_ISSUER_DOMAIN"
 
 for domain in $domains; do
   if [ ! -f "/etc/letsencrypt/live/$domain/fullchain.pem" ] || [ ! -f "/etc/letsencrypt/live/$domain/privkey.pem" ]; then
