@@ -15,6 +15,10 @@ services:
         condition: service_started
       backend-server:
         condition: service_started
+      issuer:
+        condition: service_started
+      verifier:
+        condition: service_started
     env_file:
       - ./reverse-proxy/.env
     volumes:
