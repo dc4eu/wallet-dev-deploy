@@ -129,8 +129,6 @@ services:
     networks:
       - issuer_net
       - public_net
-    profiles:
-      - demo-issuer
 
   issuer-db:
     image: mariadb:latest
@@ -151,8 +149,6 @@ services:
       - issuer-db:/var/lib/mysql
     networks:
       - issuer_net
-    profiles:
-      - demo-issuer
 
   # =========================================================================
   # Verifier
@@ -176,8 +172,6 @@ services:
     networks:
       - verifier_net
       - public_net
-    profiles:
-      - demo-verifier
 
   verifier-db:
     image: mariadb:latest
@@ -198,8 +192,7 @@ services:
       - verifier-db:/var/lib/mysql
     networks:
       - verifier_net
-    profiles:
-      - demo-verifier
+
 
   # =========================================================================
   # Debug
