@@ -120,7 +120,7 @@ services:
     image: wallet-enterprise-issuer:0.2.8
     build:
       context: apps/wallet-ecosystem
-      dockerfile: wallet-enterprise-configurations/issuer/Dockerfile
+      dockerfile: docker/wallet-enterprise-issuer.Dockerfile
     depends_on:
       issuer-db:
         condition: service_healthy
@@ -164,7 +164,7 @@ services:
     image: wallet-enterprise-verifier:0.2.8
     build:
       context: apps/wallet-ecosystem
-      dockerfile: wallet-enterprise-configurations/acme-verifier/Dockerfile
+      dockerfile: docker/wallet-enterprise-verifier.Dockerfile
     depends_on:
       verifier-db:
         condition: service_healthy
