@@ -58,7 +58,7 @@ services:
 
   frontend:
     container_name: wallet-frontend
-    image: wallet-frontend:0.2.7-1
+    image: wallet-frontend:0.2.8
     build:
       context: apps/wallet-frontend
       dockerfile: Dockerfile
@@ -71,7 +71,7 @@ services:
 
   backend-server:
     container_name: wallet-backend-server
-    image: wallet-backend-server:0.2.7-1
+    image: wallet-backend-server:0.2.8
     build:
       context: apps/wallet-backend-server
       dockerfile: Dockerfile
@@ -117,10 +117,10 @@ services:
 
   issuer:
     container_name: demo-issuer
-    image: wallet-enterprise-issuer:0.2.7-1
+    image: wallet-enterprise-issuer:0.2.8
     build:
       context: apps/wallet-ecosystem
-      dockerfile: wallet-enterprise-configurations/issuer/Dockerfile
+      dockerfile: docker/wallet-enterprise-issuer.Dockerfile
     depends_on:
       issuer-db:
         condition: service_healthy
@@ -161,10 +161,10 @@ services:
 
   verifier:
     container_name: demo-verifier
-    image: wallet-enterprise-verifier:0.2.7-1
+    image: wallet-enterprise-verifier:0.2.8
     build:
       context: apps/wallet-ecosystem
-      dockerfile: wallet-enterprise-configurations/acme-verifier/Dockerfile
+      dockerfile: docker/wallet-enterprise-verifier.Dockerfile
     depends_on:
       verifier-db:
         condition: service_healthy
