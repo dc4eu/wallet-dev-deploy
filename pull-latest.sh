@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-TAG=v0.2.8
+TAG=v0.2.8-2
 ROOT_DIR=$PWD
 
 declare -A repos
