@@ -36,9 +36,9 @@ After cd'ing into the directory you cloned this project to, run `bash pull-lates
 > After this, you need to run `bash pull-latest.sh` again to fetch the submodules.
 
 > [!NOTE]
-> As of writing (19/05/2025), you need to manually update the `wallet-enterprise` submodule inside `apps/wallet-ecosystem`:
+> As of writing, you need to manually update the `wallet-enterprise` submodule inside `apps/wallet-ecosystem`:
 >```bash
-> cd apps/wallet-ecosystem/wallet-enterprise && git checkout v0.2.8 && git pull
+> cd apps/wallet-ecosystem/wallet-enterprise && git checkout v0.2.8-2 && git pull
 >```
 
 Now you're ready to build *most* of the Docker images we need:
