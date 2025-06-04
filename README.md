@@ -55,27 +55,6 @@ You need to configure the frontend before you can build it. In order to do this:
 3. Edit `.env.prod` file if necessary (if deploying to prod make sure you change the urls to match your setup). For details refer to [wwWallet/wallet-frontend docs](https://github.com/wwWallet/wallet-frontend)
 4. Build the Docker image `docker compose build frontend`.
 
-> [!TIP]
-> To enable sourcemaps, you need to modify the `vite.config.ts` file before building the image:
-> ```diff
-> // ...
-> export default defineConfig(({ mode }) => {
->   // ...
->   return {
->     // ...
->     preview: {
->       host: true,
->       port: 3000,
->       open: true,
->     },
-> +   build: {
-> +     sourcemap: true,
-> +   }
->   }
-> });
-> ```
-
-
 
 ### 3. Configure Issuer, Verifier and Backend
 
