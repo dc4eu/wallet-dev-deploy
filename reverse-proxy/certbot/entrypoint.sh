@@ -24,6 +24,6 @@ if [ "$obtained_certs" = true ]; then
   exit 0;
 fi
 
-echo "0 0 1 * * certbot renew >> /var/log/cron.log 2>&1" >> /etc/crontabs/root
+echo "0 0 1 * * certbot renew --webroot --webroot-path /var/www/certbot  >> /var/log/cron.log 2>&1" >> /etc/crontabs/root
 touch /var/log/cron.log
 crond -f
