@@ -208,7 +208,7 @@ volumes:
 
 networks:
   public_net:
-    external: true
+    internal: false
   wallet_net:
     driver: bridge
   issuer_net:
