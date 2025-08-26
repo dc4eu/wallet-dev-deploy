@@ -33,6 +33,11 @@ services:
       - caddy-data:/data
     profiles:
       - prod
+    networks:
+      - wallet_net
+      - issuer_net
+      - verifier_net
+      - public_net
 
   # =========================================================================
   # Wallet 
