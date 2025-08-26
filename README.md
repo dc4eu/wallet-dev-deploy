@@ -89,20 +89,14 @@ You need to configure the frontend before you can build it. In order to do this:
 4. Add the trusted root cert, Verifier and Issuer details to the database by running: `bash scripts/backend-db/insert-issuer-verifier-data.sh` and enter Issuer and Verifier urls where prompted.
 
 
-### 4. Certbot & NGINX (if deploying to prod)
+### 4. Reverse proxy (if deploying to prod)
 
-These containers are in the `prod` profile, which means that they won't start by default.
+The Caddy service is in the `prod` profile, which means that it won't start by default.
 
 1. `cd reverse-proxy`
 2. `cp .env.example .env`
 3. Edit the `.env` file to include your domains.
 
-#### 4.1 Certbot
-
-Without the nginx container running, perform the inital request of the Let's Encrypt certs by running:
-```bash
-bash scripts/certbot/initial-cert-fetch.sh
-```
 
 ### 5. Start
 
@@ -122,9 +116,7 @@ docker compose --profile prod up
 .
 ├── apps                      # Source code of wallet front/backend and issuer/verifier.
 ├── apps-config               # Configs for wallet front/backend and issuer/verifier.
-├── reverse-proxy
-│   ├── certbot               # Certbot configs.
-│   └── nginx                 # Nginx configs.
+├── reverse-proxy             # Caddy config.
 ├── scripts                   # Misc. scripts.
 
 │
