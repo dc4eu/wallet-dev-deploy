@@ -10,5 +10,5 @@
 }
 
 {$DEMO_VERIFIER_DOMAIN} { 
-        reverse_proxy demo-verifier:8005
+        reverse_proxy demo-verifier:8004
 }
