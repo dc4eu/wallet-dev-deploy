@@ -7,9 +7,10 @@ services:
   # Production reverse proxy + cert handling
   # =========================================================================
 
-  nginx:
-    container_name: wallet-nginx
-    image: nginx:alpine
+  caddy:
+    container_name: wallet-caddy
+    image: caddy:latest
+    restart: always
     depends_on:
       frontend:
         condition: service_started
@@ -21,36 +22,22 @@ services:
         condition: service_started
     env_file:
       - ./reverse-proxy/.env
-    volumes:
-      - ./reverse-proxy/nginx/templates:/templates:ro
-      - ./reverse-proxy/nginx/log/:/var/log/
-      - ./reverse-proxy/nginx/40-generate-conf.sh:/docker-entrypoint.d/40-generate-conf.sh:ro
-      - ./reverse-proxy/nginx/99-crontab.sh:/docker-entrypoint.d/99-crontab.sh:ro
-      - ./reverse-proxy/certbot/letsencrypt:/etc/letsencrypt:ro
-      - ./reverse-proxy/certbot/www:/var/www/certbot
+    cap_add:
+      - NET_ADMIN
     ports:
       - 80:80
       - 443:443
+      - 443:443/udp
+    volumes:
+      - ./reverse-proxy/config:/etc/caddy
+      - caddy-data:/data
+    profiles:
+      - prod
     networks:
       - wallet_net
+      - issuer_net
+      - verifier_net
       - public_net
-    profiles:
-      - prod
-
-  certbot:
-    image: certbot/certbot:latest
-    container_name: wallet-certbot
-    env_file:
-      - ./reverse-proxy/.env
-    volumes:
-      - ./reverse-proxy/certbot/letsencrypt:/etc/letsencrypt
-      - ./reverse-proxy/certbot/www:/var/www/certbot
-      - ./reverse-proxy/certbot/log/:/var/log/
-      - ./reverse-proxy/certbot/entrypoint.sh:/entrypoint.sh
-    entrypoint: "sh /entrypoint.sh"
-    profiles:
-      - prod
-
 
   # =========================================================================
   # Wallet 
@@ -222,6 +209,7 @@ volumes:
   backend-db:
   issuer-db:
   verifier-db:
+  caddy-data:
 
 networks:
   public_net:

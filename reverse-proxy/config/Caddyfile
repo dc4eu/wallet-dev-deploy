@@ -1,0 +1,14 @@
+{$WALLET_DOMAIN} {
+    handle_path /_api/* {
+        reverse_proxy wallet-backend-server:8002
+    }
+    reverse_proxy wallet-frontend:80
+}
+
+{$DEMO_ISSUER_DOMAIN} { 
+        reverse_proxy demo-issuer:8003
+}
+
+{$DEMO_VERIFIER_DOMAIN} { 
+        reverse_proxy demo-verifier:8005
+}
